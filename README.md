@@ -19,32 +19,12 @@
 
 > A miniature production-shaped pipeline: train → persist → serve → load-test → monitor for drift. Each stage is small enough to fit in one file, and the entire run is `python run_dashboard.py`.
 
-<table>
-<tr>
-<td align="center" width="33%">
-<sub>Test AUC</sub><br>
-<b style="font-size:1.6em; color:#3B6EA8;">0.986</b><br>
-<sub>GradientBoosting on synthetic data</sub>
-</td>
-<td align="center" width="33%">
-<sub>p99 latency</sub><br>
-<b style="font-size:1.6em; color:#3B6EA8;">1.65 ms</b><br>
-<sub>per /predict request, in-process</sub>
-</td>
-<td align="center" width="33%">
-<sub>Drift PSI on x1</sub><br>
-<b style="font-size:1.6em; color:#C04040;">2.15</b><br>
-<sub>(threshold 0.25 — strong alert)</sub>
-</td>
-</tr>
-</table>
-
-| Stage | What we're measuring | Headline number |
-|---|---|---|
-| Train | Test accuracy / AUC of the classifier | **acc 0.940, AUC 0.986** |
-| Serve | p50 / p95 / p99 latency of `/predict` over 400 requests | **0.98 / 1.25 / 1.65 ms** |
-| Monitor (stable stream) | PSI per feature, no drift expected | **all PSI < 0.01** ✅ |
-| Monitor (drifted stream) | PSI per feature, drift injected on x1 and x2 | **x1 = 2.15, x2 = 1.19** 🚨 |
+<p align="center">
+  <img src="https://img.shields.io/badge/Test_AUC-0.986-3B6EA8?style=for-the-badge" alt="Test AUC 0.986">
+  <img src="https://img.shields.io/badge/p99_Latency-1.65_ms-3B6EA8?style=for-the-badge" alt="p99 latency 1.65 ms">
+  <img src="https://img.shields.io/badge/Drift_PSI_x1-2.15-C04040?style=for-the-badge" alt="Drift PSI x1 2.15">
+</p>
+<p align="center"><sub>Test AUC &rarr; <b>GradientBoosting</b> (200 trees, depth 3)&nbsp;·&nbsp;p99 latency &rarr; in-process via <b>TestClient</b>, 400 requests&nbsp;·&nbsp;PSI x1 &rarr; drifted stream, threshold 0.25 (strong alert)</sub></p>
 
 <sub>**Headline finding:** the *shape* of production ML — a model artifact that ships with its schema and reference statistics, an HTTP service that validates inputs, and a monitor that compares each live batch's distribution to training — is small. Less than 400 lines of Python total. The discipline is in *enforcing* that shape, not in the algorithms.</sub>
 
@@ -131,6 +111,64 @@ A `Dockerfile` is provided for containerized runs. It installs requirements, run
 ---
 
 ## Dashboard
+
+### Pipeline scorecard
+
+**Latency** (400 in-process requests via `TestClient`):
+
+<table>
+<tr><th align="left">Percentile</th><th>ms</th></tr>
+<tr>
+  <td>p50</td>
+  <td align="center"><img src="https://img.shields.io/badge/0.979-7A7A7A?style=flat-square" alt="0.979"></td>
+</tr>
+<tr>
+  <td>p95</td>
+  <td align="center"><img src="https://img.shields.io/badge/1.248-7A7A7A?style=flat-square" alt="1.248"></td>
+</tr>
+<tr>
+  <td>p99</td>
+  <td align="center"><img src="https://img.shields.io/badge/1.655-3B6EA8?style=flat-square" alt="1.655"></td>
+</tr>
+</table>
+
+**Drift PSI** (reference = 4 000 train rows; live batch = 2 000 rows per stream):
+
+<table>
+<tr><th align="left">Feature</th><th>Stable</th><th>Drifted</th></tr>
+<tr>
+  <td>x1</td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0076-7A7A7A?style=flat-square" alt="0.0076"></td>
+  <td align="center"><img src="https://img.shields.io/badge/2.151-C04040?style=flat-square" alt="2.151"></td>
+</tr>
+<tr>
+  <td>x2</td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0087-7A7A7A?style=flat-square" alt="0.0087"></td>
+  <td align="center"><img src="https://img.shields.io/badge/1.193-C04040?style=flat-square" alt="1.193"></td>
+</tr>
+<tr>
+  <td>x3</td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0080-7A7A7A?style=flat-square" alt="0.0080"></td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0048-7A7A7A?style=flat-square" alt="0.0048"></td>
+</tr>
+<tr>
+  <td>x4</td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0014-7A7A7A?style=flat-square" alt="0.0014"></td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0080-7A7A7A?style=flat-square" alt="0.0080"></td>
+</tr>
+<tr>
+  <td>x5</td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0068-7A7A7A?style=flat-square" alt="0.0068"></td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0037-7A7A7A?style=flat-square" alt="0.0037"></td>
+</tr>
+<tr>
+  <td>x6</td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0061-7A7A7A?style=flat-square" alt="0.0061"></td>
+  <td align="center"><img src="https://img.shields.io/badge/0.0114-7A7A7A?style=flat-square" alt="0.0114"></td>
+</tr>
+</table>
+
+<sub>PSI thresholds: &lt; 0.10 none &nbsp;|&nbsp; 0.10 – 0.25 moderate &nbsp;|&nbsp; &gt; 0.25 alert (red). Values from `results/metrics.json`.</sub>
 
 ### 1. End-to-end architecture
 
