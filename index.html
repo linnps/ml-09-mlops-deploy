@@ -80,12 +80,16 @@
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:780px){.kpis{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}
     .sidebar{width:64px}.brand .t,nav a span.tx,.side-foot{display:none}}
+  .repo-btn{display:block;margin:14px 16px 2px 16px;padding:10px 14px;background:var(--orange);color:#fff;text-align:center;text-decoration:none;border-radius:6px;font-weight:700;font-size:13px;letter-spacing:.3px}
+  .repo-btn:hover{background:#d86a23}
+  @media(max-width:780px){.repo-btn{display:none}}
 </style>
 </head>
 <body>
 
 <aside class="sidebar">
   <div class="brand"><div class="n">ML · 09</div><div class="t">MLOps — Deploy &amp; Drift</div></div>
+    <a class="repo-btn" href="https://github.com/linnps/ml-09-mlops-deploy">← GitHub Repository</a>
   <nav>
     <a data-p="overview" class="active"><span class="ic">▣</span><span class="tx">Overview</span></a>
     <a data-p="charts"><span class="ic">▤</span><span class="tx">Charts</span></a>
