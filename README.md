@@ -15,6 +15,10 @@
 
 ---
 
+<p align="center">
+  <a href="https://linnps.github.io/ml-09-mlops-deploy/"><img src="https://img.shields.io/badge/View_Live_Dashboard-0E2841?style=for-the-badge&amp;logo=githubpages&amp;logoColor=white" alt="View live dashboard"></a>
+</p>
+
 ## At a glance
 
 > A miniature production-shaped pipeline: train → persist → serve → load-test → monitor for drift. Each stage is small enough to fit in one file, and the entire run is `python run_dashboard.py`.
